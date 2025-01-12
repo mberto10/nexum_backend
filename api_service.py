@@ -76,7 +76,8 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
             # Execute analysis using the planner module
             result = analysis_planner.run_planning_workflow(
                 user_query=request.command,
-                company_name=request.entryId
+                company_name=request.entryId,
+                use_context_cache=True
             )
             
             # Save the plan and get the markdown file path
