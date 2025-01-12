@@ -95,13 +95,14 @@ async def search(request: SearchRequest) -> SearchResponse:
 
 @app.post("/api/command")
 async def execute_command(request: CommandRequest) -> CommandResponse:
-    # Ensure logs directory exists
-    os.makedirs('logs', exist_ok=True)
-
-    print(f"\n=== New API Command Request ===")
-    print(f"Type: {request.type}")
-    print(f"Command: {request.command}")
-    print(f"EntryId: {request.entryId}")
+    print("\n")
+    print("="*50)
+    print("INCOMING API REQUEST")
+    print("="*50)
+    print(f"COMMAND: {request.command}")
+    print(f"TYPE: {request.type}")
+    print(f"ENTRY ID: {request.entryId}")
+    print("="*50)
     
     logging.info("\n=== New API Command Request ===")
     logging.info(f"Type: {request.type}")
