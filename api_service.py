@@ -1,4 +1,6 @@
 
+import logging
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -8,8 +10,6 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-
-import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
