@@ -2,14 +2,25 @@
 import logging
 
 # Configure logging
+import os
+
+# Ensure logs directory exists
+os.makedirs('logs', exist_ok=True)
+
+# Configure logging with absolute path
+log_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs', 'api_service.log')
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('logs/api_service.log'),
+        logging.FileHandler(log_file),
         logging.StreamHandler()
-    ]
+    ],
+    force=True  # Force configuration even if already configured
 )
+
+# Add immediate log message to verify logging is working
+logging.info("API Service logging initialized")
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
