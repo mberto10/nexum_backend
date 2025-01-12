@@ -569,14 +569,17 @@ def build_initial_planning_graph(use_context_cache: bool = True):
 
     return builder.compile()
 
-def run_planning_workflow(user_query: str, company_name: str, use_context_cache: bool = True) -> dict:
+def run_planning_workflow(command: str, company_name: str, use_context_cache: bool = True) -> dict:
     """
-    High-level function that sets up the graph state with user inputs,
-    then runs the planning node.
+    High-level function that sets up the graph state with inputs from frontend.
+    Args:
+        command: The analysis command/query from the frontend
+        company_name: Target company name
+        use_context_cache: Whether to use cached context
     """
     graph = build_initial_planning_graph(use_context_cache=use_context_cache)
     initial_state: AnalysisState = {
-        "user_query": user_query,
+        "user_query": command,  # Use the command as user query
         "company_name": company_name,
         "analysis_type": None,
         "information_needs": None,
