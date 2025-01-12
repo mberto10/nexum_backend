@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -68,6 +69,7 @@ async def search(request: SearchRequest) -> SearchResponse:
         ]
         return SearchResponse(companies=companies)
     except Exception as e:
+        logging.error(f"Error during search: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/command")
@@ -80,14 +82,14 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
                 company_name=request.entryId,
                 use_context_cache=True
             )
-            
+
             # Save the plan and get the markdown file path
             output_file = analysis_planner.save_plan_as_markdown(result)
-            
+
             # Read the markdown content
             with open(output_file, 'r') as f:
                 content = f.read()
-                
+
             return CommandResponse(content=content)
         else:
             raise HTTPException(
@@ -95,8 +97,9 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
                 detail=f"Unsupported command type: {request.type}"
             )
     except Exception as e:
+        logging.error(f"Error executing command: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3000) 
+    uvicorn.run(app, host="0.0.0.0", port=3000)
