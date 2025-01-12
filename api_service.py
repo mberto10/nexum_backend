@@ -15,10 +15,16 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Modify this in production to specific origins
+    allow_origins=[
+        "https://2c9e21e6-fd5d-45b4-8580-84b7305a5ae4-00-h4gay4hmypih.kirk.replit.dev",
+        "http://localhost:3000",
+        "https://*.replit.dev"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    allow_origin_regex="https://.*\.replit\.dev"
 )
 
 # Request/Response Models
