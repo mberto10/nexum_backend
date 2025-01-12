@@ -3,7 +3,7 @@ import google.generativeai as genai
 from typing import TypedDict, Optional, List, Dict, Any
 from langgraph.graph.state import StateGraph, START, END
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph.types import Command
+# Command import removed as it's not needed
 import json
 from datetime import datetime
 from langsmith import traceable
@@ -404,7 +404,7 @@ def get_planning_model():
             "executionPlan"
         ]
     }
-    
+
     return model
 
 # ----------------------------------------------------------------------------
@@ -459,24 +459,24 @@ Return a JSON object following the schema provided. Do not include any markdown 
 
     try:
         model = get_planning_model()
-        
+
         # Generate response with timing
         response = model.generate_content(
             prompt
         )
-        
+
         raw_text = response.text.strip()
-        
+
         # Remove any markdown formatting if present
         if raw_text.startswith("```"):
             raw_text = raw_text.split("```")[1]
             if raw_text.startswith("json"):
                 raw_text = raw_text[4:]
         raw_text = raw_text.strip()
-        
+
         # Parse JSON and update metrics
         parsed = json.loads(raw_text)
-        
+
         # Track token usage and cost
         if hasattr(response, 'usage'):
             # Actual token usage from Gemini
@@ -485,7 +485,7 @@ Return a JSON object following the schema provided. Do not include any markdown 
                 "completion_tokens": response.usage.completion_tokens,
                 "total_tokens": response.usage.total_tokens
             }
-            
+
             # Calculate costs based on model type (Gemini 1.5 Flash/Pro pricing)
             # For prompts <= 128K tokens:
             # Flash: $0.00001875/1K chars input, $0.000075/1K chars output
@@ -498,7 +498,7 @@ Return a JSON object following the schema provided. Do not include any markdown 
             else:  # gemini-1.5-pro
                 prompt_cost = (response.usage.prompt_tokens * chars_per_token * 0.0003125) / 1000
                 completion_cost = (response.usage.completion_tokens * chars_per_token * 0.00125) / 1000
-            
+
             metrics["cost"] = {
                 "prompt_cost": prompt_cost,
                 "completion_cost": completion_cost,
@@ -509,27 +509,27 @@ Return a JSON object following the schema provided. Do not include any markdown 
             # Fallback to simple estimation if usage not available
             prompt_chars = len(prompt) * 4  # Approximate character count
             completion_chars = len(raw_text) * 4
-            
+
             metrics["token_usage"] = {
                 "prompt_tokens": prompt_chars // 4,
                 "completion_tokens": completion_chars // 4,
                 "total_tokens": (prompt_chars + completion_chars) // 4
             }
-            
+
             # Estimate costs using Gemini 1.5 Pro pricing by default
             prompt_cost = (prompt_chars * 0.0003125) / 1000
             completion_cost = (completion_chars * 0.00125) / 1000
-            
+
             metrics["cost"] = {
                 "prompt_cost": prompt_cost,
                 "completion_cost": completion_cost,
                 "total_cost": prompt_cost + completion_cost,
                 "model": "gemini-1.5-pro (estimated)"
             }
-        
+
         # Add latency
         metrics["latency"] = time.time() - start_time
-        
+
         # Store results in state
         state["plan_raw"] = parsed
         state["analysis_type"] = parsed.get("analysisType")
@@ -606,10 +606,10 @@ def save_plan_as_markdown(state: AnalysisState, output_file: str = None) -> str:
     content = []
     content.append(f"# Analysis Plan for {state['company_name']}\n")
     content.append(f"## Query\n{state['user_query']}\n")
-    
+
     if state.get("analysis_type"):
         content.append(f"## Analysis Type\n{state['analysis_type']}\n")
-    
+
     if state.get("information_needs"):
         content.append("## Information Needs\n")
         for i, need in enumerate(state["information_needs"], 1):
@@ -618,7 +618,7 @@ def save_plan_as_markdown(state: AnalysisState, output_file: str = None) -> str:
             content.append(f"- **Type**: {need['tag']}")
             content.append(f"- **Data Source**: {need['dataSource']}")
             content.append(f"- **Storage ID**: `{need['stored']}`\n")
-    
+
     if state.get("execution_plan"):
         content.append("## Execution Plan\n")
         for i, step in enumerate(state["execution_plan"], 1):
@@ -650,11 +650,11 @@ if __name__ == "__main__":
     print("\n===== Analysis Planning Output =====")
     print(f"\nQuery: {test_query}")
     print(f"Company: {test_company}\n")
-    
+
     # Save as markdown
     output_file = save_plan_as_markdown(result)
     print(f"\nAnalysis plan saved to: {output_file}")
-    
+
     # Also print JSON for debugging
     plan = result.get("plan_raw", {})
     formatted_json = json.dumps(plan, indent=2)
