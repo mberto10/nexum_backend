@@ -3,7 +3,7 @@ import google.generativeai as genai
 from typing import TypedDict, Optional, List, Dict, Any
 from langgraph.graph.state import StateGraph, START, END
 from langchain_core.runnables import RunnableConfig
-from langgraph.types import Command
+from langgraph.graph.types import Command
 import json
 from datetime import datetime
 from langsmith import traceable
