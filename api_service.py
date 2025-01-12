@@ -1,9 +1,8 @@
-
+import os
+import sys
 import logging
 
 # Configure logging
-import os
-
 # Ensure logs directory exists
 os.makedirs('logs', exist_ok=True)
 
@@ -98,12 +97,12 @@ async def search(request: SearchRequest) -> SearchResponse:
 async def execute_command(request: CommandRequest) -> CommandResponse:
     # Ensure logs directory exists
     os.makedirs('logs', exist_ok=True)
-    
+
     logging.info("\n=== New API Command Request ===")
     logging.info(f"Type: {request.type}")
     logging.info(f"Command: {request.command}")
     logging.info(f"EntryId: {request.entryId}")
-    
+
     try:
         if request.type == "analysis":
             logging.info("Executing analysis workflow...")
