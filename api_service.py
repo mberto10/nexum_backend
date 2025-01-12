@@ -1,3 +1,14 @@
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('logs/api_service.log'),
+        logging.StreamHandler()
+    ]
+)
+
 import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -74,6 +85,11 @@ async def search(request: SearchRequest) -> SearchResponse:
 
 @app.post("/api/command")
 async def execute_command(request: CommandRequest) -> CommandResponse:
+    logging.info(f"\n=== New API Command Request ===")
+    logging.info(f"Type: {request.type}")
+    logging.info(f"Command: {request.command}")
+    logging.info(f"EntryId: {request.entryId}")
+    
     try:
         if request.type == "analysis":
             # Execute analysis using the planner module
