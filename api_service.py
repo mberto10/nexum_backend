@@ -98,6 +98,11 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
     # Ensure logs directory exists
     os.makedirs('logs', exist_ok=True)
 
+    print(f"\n=== New API Command Request ===")
+    print(f"Type: {request.type}")
+    print(f"Command: {request.command}")
+    print(f"EntryId: {request.entryId}")
+    
     logging.info("\n=== New API Command Request ===")
     logging.info(f"Type: {request.type}")
     logging.info(f"Command: {request.command}")
