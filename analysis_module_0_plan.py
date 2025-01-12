@@ -3,7 +3,6 @@ import google.generativeai as genai
 from typing import TypedDict, Optional, List, Dict, Any
 from langgraph.graph.state import StateGraph, START, END
 from langchain_core.runnables import RunnableConfig
-# Command import removed as it's not needed
 import json
 from datetime import datetime
 from langsmith import traceable
@@ -14,17 +13,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Verify environment variables are loaded
-required_env_vars = [
-    "GEMINI_API_KEY"
-]
+required_env_vars = ["GEMINI_API_KEY"]
 
 missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 if missing_vars:
-    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+    raise ValueError(
+        f"Missing required environment variables: {', '.join(missing_vars)}")
 
 # ----------------------------------------------------------------------------
 # 1. State Definition
 # ----------------------------------------------------------------------------
+
 
 class AnalysisState(TypedDict):
     """
@@ -37,6 +36,7 @@ class AnalysisState(TypedDict):
     execution_plan: Optional[List[Dict[str, Any]]]
     plan_raw: Optional[Dict[str, Any]]  # New field for tracking metrics
     metrics: Optional[Dict[str, Any]]
+
 
 # ----------------------------------------------------------------------------
 # 3. Context Cache (Workflow + Modules Overview)
@@ -328,27 +328,34 @@ if not gemini_api_key:
     raise ValueError("GEMINI_API_KEY environment variable is not set")
 genai.configure(api_key=gemini_api_key)
 
+
 def get_planning_model():
     model = genai.GenerativeModel(
         model_name="gemini-1.5-flash",
         generation_config=genai.types.GenerationConfig(
             temperature=0.5,
             max_output_tokens=2500,
-        )
-    )
+        ))
 
     # Define the response schema for structured output
     model.response_schema = {
         "type": "object",
         "properties": {
-            "analysisType": {"type": "string"},
+            "analysisType": {
+                "type": "string"
+            },
             "informationNeeds": {
                 "type": "array",
                 "items": {
-                    "type": "object",
+                    "type":
+                    "object",
                     "properties": {
-                        "summary": {"type": "string"},
-                        "description": {"type": "string"},
+                        "summary": {
+                            "type": "string"
+                        },
+                        "description": {
+                            "type": "string"
+                        },
                         "tag": {
                             "type": "string",
                             "enum": ["factual", "broad"]
@@ -357,9 +364,12 @@ def get_planning_model():
                             "type": "string",
                             "enum": ["10k", "web"]
                         },
-                        "stored": {"type": "string"}
+                        "stored": {
+                            "type": "string"
+                        }
                     },
-                    "required": ["summary", "description", "tag", "dataSource", "stored"]
+                    "required":
+                    ["summary", "description", "tag", "dataSource", "stored"]
                 }
             },
             "executionPlan": {
@@ -367,30 +377,37 @@ def get_planning_model():
                 "items": {
                     "type": "object",
                     "properties": {
-                        "stepName": {"type": "string"},
+                        "stepName": {
+                            "type": "string"
+                        },
                         "actions": {
                             "type": "array",
                             "items": {
                                 "type": "object",
                                 "properties": {
                                     "actionType": {
-                                        "type": "string",
+                                        "type":
+                                        "string",
                                         "enum": [
                                             "FinancialCalculation",
                                             "TextAnalysis",
                                             "ComparisonAnalysis",
-                                            "ScenarioModeling",
-                                            "WebResearch",
+                                            "ScenarioModeling", "WebResearch",
                                             "ResultFormatting"
                                         ]
                                     },
-                                    "task": {"type": "string"},
+                                    "task": {
+                                        "type": "string"
+                                    },
                                     "information": {
                                         "type": "array",
-                                        "items": {"type": "string"}
+                                        "items": {
+                                            "type": "string"
+                                        }
                                     }
                                 },
-                                "required": ["actionType", "task", "information"]
+                                "required":
+                                ["actionType", "task", "information"]
                             }
                         }
                     },
@@ -398,21 +415,21 @@ def get_planning_model():
                 }
             }
         },
-        "required": [
-            "analysisType",
-            "informationNeeds",
-            "executionPlan"
-        ]
+        "required": ["analysisType", "informationNeeds", "executionPlan"]
     }
 
     return model
+
 
 # ----------------------------------------------------------------------------
 # 5. Planning Node
 # ----------------------------------------------------------------------------
 
+
 @traceable(name="planning_node", tags=["planning", "gemini"])
-def planning_node(state: AnalysisState, config: RunnableConfig, use_context_cache: bool = True) -> AnalysisState:
+def planning_node(state: AnalysisState,
+                  config: RunnableConfig,
+                  use_context_cache: bool = True) -> AnalysisState:
     """
     Module 2 - Planning:
     1. Accept user_query & company_name from state
@@ -461,9 +478,7 @@ Return a JSON object following the schema provided. Do not include any markdown 
         model = get_planning_model()
 
         # Generate response with timing
-        response = model.generate_content(
-            prompt
-        )
+        response = model.generate_content(prompt)
 
         raw_text = response.text.strip()
 
@@ -493,11 +508,15 @@ Return a JSON object following the schema provided. Do not include any markdown 
             # Note: ~4 characters per token as per Google's documentation
             chars_per_token = 4
             if model.model_name == "gemini-1.5-flash":
-                prompt_cost = (response.usage.prompt_tokens * chars_per_token * 0.00001875) / 1000
-                completion_cost = (response.usage.completion_tokens * chars_per_token * 0.000075) / 1000
+                prompt_cost = (response.usage.prompt_tokens * chars_per_token *
+                               0.00001875) / 1000
+                completion_cost = (response.usage.completion_tokens *
+                                   chars_per_token * 0.000075) / 1000
             else:  # gemini-1.5-pro
-                prompt_cost = (response.usage.prompt_tokens * chars_per_token * 0.0003125) / 1000
-                completion_cost = (response.usage.completion_tokens * chars_per_token * 0.00125) / 1000
+                prompt_cost = (response.usage.prompt_tokens * chars_per_token *
+                               0.0003125) / 1000
+                completion_cost = (response.usage.completion_tokens *
+                                   chars_per_token * 0.00125) / 1000
 
             metrics["cost"] = {
                 "prompt_cost": prompt_cost,
@@ -548,9 +567,11 @@ Return a JSON object following the schema provided. Do not include any markdown 
 
     return state
 
+
 # ----------------------------------------------------------------------------
 # 5. Graph Setup
 # ----------------------------------------------------------------------------
+
 
 def build_initial_planning_graph(use_context_cache: bool = True):
     """
@@ -559,8 +580,11 @@ def build_initial_planning_graph(use_context_cache: bool = True):
     """
     builder = StateGraph(AnalysisState)
 
-    def planning_node_wrapper(state: AnalysisState, config: RunnableConfig) -> AnalysisState:
-        return planning_node(state, config, use_context_cache=use_context_cache)
+    def planning_node_wrapper(state: AnalysisState,
+                              config: RunnableConfig) -> AnalysisState:
+        return planning_node(state,
+                             config,
+                             use_context_cache=use_context_cache)
 
     builder.add_node("planning_node", planning_node_wrapper)
 
@@ -569,7 +593,10 @@ def build_initial_planning_graph(use_context_cache: bool = True):
 
     return builder.compile()
 
-def run_planning_workflow(command: str, company_name: str, use_context_cache: bool = True) -> dict:
+
+def run_planning_workflow(command: str,
+                          company_name: str,
+                          use_context_cache: bool = True) -> dict:
     """
     High-level function that sets up the graph state with inputs from frontend.
     Args:
@@ -590,7 +617,9 @@ def run_planning_workflow(command: str, company_name: str, use_context_cache: bo
     final_state = graph.invoke(initial_state)
     return final_state
 
-def save_plan_as_markdown(state: AnalysisState, output_file: str = None) -> str:
+
+def save_plan_as_markdown(state: AnalysisState,
+                          output_file: str = None) -> str:
     """
     Save the analysis plan as a well-formatted markdown file.
     Returns the path to the saved file.
@@ -603,7 +632,8 @@ def save_plan_as_markdown(state: AnalysisState, output_file: str = None) -> str:
     if not output_file:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         company_name = state.get("company_name", "unknown").replace(" ", "_")
-        output_file = os.path.join(output_dir, f"analysis_plan_{company_name}_{timestamp}.md")
+        output_file = os.path.join(
+            output_dir, f"analysis_plan_{company_name}_{timestamp}.md")
 
     # Format the content
     content = []
@@ -642,6 +672,7 @@ def save_plan_as_markdown(state: AnalysisState, output_file: str = None) -> str:
 
     return output_file
 
+
 # ----------------------------------------------------------------------------
 # 6. Testing / Main
 # ----------------------------------------------------------------------------
@@ -649,7 +680,9 @@ def save_plan_as_markdown(state: AnalysisState, output_file: str = None) -> str:
 if __name__ == "__main__":
     test_query = "Analyze NVIDIA's equity and debt financing activities."
     test_company = "NVIDIA"
-    result = run_planning_workflow(test_query, test_company, use_context_cache=True)
+    result = run_planning_workflow(test_query,
+                                   test_company,
+                                   use_context_cache=True)
     print("\n===== Analysis Planning Output =====")
     print(f"\nQuery: {test_query}")
     print(f"Company: {test_company}\n")
