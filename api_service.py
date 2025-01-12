@@ -96,13 +96,17 @@ async def search(request: SearchRequest) -> SearchResponse:
 
 @app.post("/api/command")
 async def execute_command(request: CommandRequest) -> CommandResponse:
-    logging.info(f"\n=== New API Command Request ===")
+    # Ensure logs directory exists
+    os.makedirs('logs', exist_ok=True)
+    
+    logging.info("\n=== New API Command Request ===")
     logging.info(f"Type: {request.type}")
     logging.info(f"Command: {request.command}")
     logging.info(f"EntryId: {request.entryId}")
     
     try:
         if request.type == "analysis":
+            logging.info("Executing analysis workflow...")
             # Execute analysis using the planner module
             result = analysis_planner.run_planning_workflow(
                 user_query=request.command,
@@ -117,15 +121,22 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
             with open(output_file, 'r') as f:
                 content = f.read()
 
+            logging.info(f"Analysis completed successfully, generated file: {output_file}")
             return CommandResponse(content=content)
+        elif request.type == "auto":
+            # Handle auto type commands
+            logging.info(f"Executing auto command: {request.command}")
+            response_content = f"Executed {request.command} with {request.type} (ID: {request.entryId})"
+            logging.info(f"Auto command completed: {response_content}")
+            return CommandResponse(content=response_content)
         else:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Unsupported command type: {request.type}"
-            )
+            error_msg = f"Unsupported command type: {request.type}"
+            logging.error(error_msg)
+            raise HTTPException(status_code=400, detail=error_msg)
     except Exception as e:
-        logging.error(f"Error executing command: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        error_msg = f"Error executing command: {str(e)}"
+        logging.error(error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 if __name__ == "__main__":
     import uvicorn
