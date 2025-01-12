@@ -4,4 +4,11 @@ version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "google-generativeai>=0.8.3",
+    "langchain-core>=0.3.29",
+    "langfuse>=2.57.5",
+    "langgraph>=0.2.61",
+    "pinecone>=5.4.2",
+    "python-dotenv>=1.0.1",
+]

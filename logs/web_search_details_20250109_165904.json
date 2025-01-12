@@ -1,0 +1,51 @@
+{
+  "query_transformations": [
+    {
+      "timestamp": "2025-01-09 16:59:03",
+      "original_query": "Find recent news and analysis about NVIDIA's competition in the AI chip market",
+      "transformed_query": "\"NVIDIA AI chip competition news 2023\"",
+      "info_need_summary": "Market Competition"
+    }
+  ],
+  "search_queries": [
+    {
+      "timestamp": "2025-01-09 16:59:03",
+      "info_need_summary": "Market Competition",
+      "query": "\"NVIDIA AI chip competition news 2023\"",
+      "search_config": {
+        "type": "neural",
+        "use_autoprompt": false,
+        "num_results": 3
+      },
+      "results_found": 3,
+      "result_previews": [
+        {
+          "title": "How Nvidia Built a Competitive Moat Around A.I. Chips",
+          "url": "https://www.nytimes.com/2023/08/21/technology/nvidia-ai-chips-gpu.html",
+          "text_preview": "Advertisement SKIP ADVERTISEMENT The most visible winner of the artificial intelligence boom achieved its dominance by becoming a one-stop shop for A.I. development, from chips to software to other se..."
+        },
+        {
+          "title": "The Next Challengers Joining Nvidia in the AI Chip Revolution",
+          "url": "https://www.wsj.com/articles/the-next-challengers-joining-nvidia-in-the-ai-chip-revolution-e0055485",
+          "text_preview": "Copyright \u00a92023 Dow Jones &amp; Company, Inc. All Rights Reserved This copy is for your personal, non-commercial use only. Distribution and use of this material are governed by our Subscriber Agreemen..."
+        },
+        {
+          "title": "Nvidia reveals new A.I. chip, says costs of running LLMs will 'drop significantly'",
+          "url": "https://www.cnbc.com/2023/08/08/nvidia-reveals-new-ai-chip-says-cost-of-running-large-language-models-will-drop-significantly-.html",
+          "text_preview": "Nvidia President and CEO Jensen Huang speaks at the COMPUTEX forum in Taiwan, May 28, 2023. Sopa Images | Lightrocket | Getty Images Nvidia announced a new chip designed to run artificial intelligence..."
+        }
+      ]
+    }
+  ],
+  "retry_attempts": [],
+  "final_results": [
+    {
+      "timestamp": "2025-01-09 16:59:04",
+      "info_need_summary": "Market Competition",
+      "status": "completed",
+      "errors": [],
+      "has_results": true,
+      "text_preview": "Title: How Nvidia Built a Competitive Moat Around A.I. Chips\nURL: https://www.nytimes.com/2023/08/21/technology/nvidia-ai-chips-gpu.html\nSnippet: Advertisement SKIP ADVERTISEMENT The most visible winn..."
+    }
+  ]
+}
