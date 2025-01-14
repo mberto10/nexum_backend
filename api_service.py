@@ -35,13 +35,25 @@ env_vars = load_core_variables()
 app = FastAPI()
 
 # Configure CORS
+origins = [
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "http://0.0.0.0:3000",
+    "https://0.0.0.0:3000",
+    "http://127.0.0.1:3000",
+    "https://127.0.0.1:3000",
+]
+
+# Add the replit domain pattern
+if os.environ.get("REPL_SLUG") and os.environ.get("REPL_OWNER"):
+    origins.append(f"https://{os.environ['REPL_SLUG']}.{os.environ['REPL_OWNER']}.repl.co")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"]
+    allow_headers=["*"]
 )
 
 # Request/Response Models
@@ -149,4 +161,5 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3000)
+    port = int(os.environ.get("PORT", 3000))
+    uvicorn.run(app, host="0.0.0.0", port=port, forwarded_allow_ips="*")
