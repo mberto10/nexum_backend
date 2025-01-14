@@ -37,12 +37,15 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins in development
+    allow_origins=[
+        "https://2c9e21e6-fd5d-45b4-8580-84b7305a5ae4-00-h4gay4hmypih.kirk.replit.dev",
+        "https://*.replit.dev",
+        "https://*.repl.co"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    max_age=3600,
-    expose_headers=["*"]
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    max_age=3600
 )
 
 # Request/Response Models
@@ -106,11 +109,14 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
         logging.info(f"Command: {request.command}")
         logging.info(f"EntryId: {request.entryId}")
         
-        # Add validation
         if not request.command or not request.type or not request.entryId:
             raise HTTPException(status_code=400, detail="Missing required fields")
             
-        return CommandResponse(content=f"Command received: {request.command}")
+        # Process the command and return response
+        response_content = f"Executed {request.command} with {request.type} (ID: {request.entryId})"
+        logging.info(f"Sending response: {response_content}")
+        return CommandResponse(content=response_content)
+        
     except Exception as e:
         logging.error(f"Error processing command: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
