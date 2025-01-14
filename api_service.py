@@ -104,53 +104,12 @@ async def search(request: SearchRequest) -> SearchResponse:
 
 @app.post("/api/command")
 async def execute_command(request: CommandRequest) -> CommandResponse:
-    print("\n")
-    print("="*50)
-    print("INCOMING API REQUEST")
-    print("="*50)
-    print(f"COMMAND: {request.command}")
-    print(f"TYPE: {request.type}")
-    print(f"ENTRY ID: {request.entryId}")
-    print("="*50)
-    
     logging.info("\n=== New API Command Request ===")
     logging.info(f"Type: {request.type}")
     logging.info(f"Command: {request.command}")
     logging.info(f"EntryId: {request.entryId}")
-
-    try:
-        if request.type == "analysis":
-            logging.info("Executing analysis workflow...")
-            # Execute analysis using the planner module
-            result = analysis_planner.run_planning_workflow(
-                user_query=request.command,
-                company_name=request.entryId,
-                use_context_cache=True
-            )
-
-            # Save the plan and get the markdown file path
-            output_file = analysis_planner.save_plan_as_markdown(result)
-
-            # Read the markdown content
-            with open(output_file, 'r') as f:
-                content = f.read()
-
-            logging.info(f"Analysis completed successfully, generated file: {output_file}")
-            return CommandResponse(content=content)
-        elif request.type == "auto":
-            # Handle auto type commands
-            logging.info(f"Executing auto command: {request.command}")
-            response_content = f"Executed {request.command} with {request.type} (ID: {request.entryId})"
-            logging.info(f"Auto command completed: {response_content}")
-            return CommandResponse(content=response_content)
-        else:
-            error_msg = f"Unsupported command type: {request.type}"
-            logging.error(error_msg)
-            raise HTTPException(status_code=400, detail=error_msg)
-    except Exception as e:
-        error_msg = f"Error executing command: {str(e)}"
-        logging.error(error_msg)
-        raise HTTPException(status_code=500, detail=error_msg)
+    
+    return CommandResponse(content="Hello World! This is a test response from the API.")
 
 if __name__ == "__main__":
     import uvicorn
