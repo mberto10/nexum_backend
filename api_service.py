@@ -35,14 +35,13 @@ env_vars = load_core_variables()
 app = FastAPI()
 
 # Configure CORS
-origins = ["*"]  # Allow all origins in development
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"]
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+    max_age=3600
 )
 
 # Request/Response Models
