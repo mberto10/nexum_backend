@@ -110,7 +110,14 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
         logging.info(f"EntryId: {request.entryId}")
         
         if not request.command or not request.type or not request.entryId:
+            logging.error("Missing required fields in request")
             raise HTTPException(status_code=400, detail="Missing required fields")
+            
+        # Validate request type
+        valid_types = ["auto", "retrieval", "analysis", "scenario", "web"]
+        if request.type not in valid_types:
+            logging.error(f"Invalid request type: {request.type}")
+            raise HTTPException(status_code=400, detail=f"Invalid type. Must be one of: {', '.join(valid_types)}")
             
         if request.type == "retrieval":
             # Import the retrieval agent
@@ -138,9 +145,12 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
         logging.info(f"Sending response: {response_content}")
         return CommandResponse(content=response_content)
         
+    except HTTPException as he:
+        logging.error(f"HTTP error processing command: {str(he)}")
+        raise he
     except Exception as e:
-        logging.error(f"Error processing command: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.error(f"Unexpected error processing command: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error. Please check server logs.")
 
 if __name__ == "__main__":
     import uvicorn
