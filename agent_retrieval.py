@@ -533,7 +533,8 @@ def build_retrieval_graph() -> StateGraph:
     """
     builder = StateGraph(AgentState)
 
-    # Add nodes
+    # Add nodes including START and END
+    builder.add_node("__start__", lambda x: x)
     builder.add_node("gemini_determine_headings", gemini_determine_headings)
     builder.add_node("retrieve_metadata_with_zero_vector", retrieve_metadata_with_zero_vector)
     builder.add_node("configure_search_with_gemini", configure_search_with_gemini)
@@ -541,7 +542,7 @@ def build_retrieval_graph() -> StateGraph:
     builder.add_node("interpret_results_with_gemini", interpret_results_with_gemini)
 
     # Edges
-    builder.add_edge(START, "gemini_determine_headings")
+    builder.add_edge("__start__", "gemini_determine_headings")
     builder.add_edge("gemini_determine_headings", "retrieve_metadata_with_zero_vector")
     builder.add_edge("retrieve_metadata_with_zero_vector", "configure_search_with_gemini")
     builder.add_edge("configure_search_with_gemini", "pinecone_vector_search")
