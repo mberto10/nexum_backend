@@ -112,8 +112,29 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
         if not request.command or not request.type or not request.entryId:
             raise HTTPException(status_code=400, detail="Missing required fields")
             
-        # Return test response
-        response_content = "it worked"
+        if request.type == "retrieval":
+            # Import the retrieval agent
+            from agent_retrieval import build_retrieval_graph
+            
+            # Set up initial state for retrieval
+            initial_state = {
+                "user_query": request.command,
+                "company_namespace": "nvidia",  # You can make this dynamic later
+                "relevant_item_headings": [],
+                "available_subheadings": [],
+                "search_configuration": None,
+                "pinecone_search_queries": [],
+                "matched_chunks": [],
+                "final_answer": None
+            }
+            
+            # Run retrieval graph
+            graph = build_retrieval_graph()
+            final_state = graph.invoke(initial_state)
+            response_content = final_state.get("final_answer", "No answer generated")
+        else:
+            response_content = f"Executed {request.command} with {request.type}"
+            
         logging.info(f"Sending response: {response_content}")
         return CommandResponse(content=response_content)
         
