@@ -77,6 +77,10 @@ async def http_exception_handler(request, exc):
     )
 
 # Routes
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the API Service"}
+
 @app.post("/api/search")
 async def search(request: SearchRequest) -> SearchResponse:
     try:
