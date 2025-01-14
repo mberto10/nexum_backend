@@ -135,9 +135,24 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
                 "final_answer": None
             }
             
-            # Run retrieval graph
+            # Import and run retrieval graph
+            from agent_retrieval import build_retrieval_graph, AgentState
+            
+            # Initialize retrieval state
+            retrieval_state: AgentState = {
+                "user_query": request.command,
+                "company_namespace": "nvidia",  # You can make this dynamic later
+                "relevant_item_headings": [],
+                "available_subheadings": {},
+                "search_configuration": None,
+                "pinecone_search_queries": [],
+                "matched_chunks": [],
+                "final_answer": None
+            }
+            
+            # Build and run graph
             graph = build_retrieval_graph()
-            final_state = graph.invoke(initial_state)
+            final_state = graph.invoke(retrieval_state)
             response_content = final_state.get("final_answer", "No answer generated")
         else:
             response_content = f"Executed {request.command} with {request.type}"
