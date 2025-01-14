@@ -112,8 +112,8 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
         if not request.command or not request.type or not request.entryId:
             raise HTTPException(status_code=400, detail="Missing required fields")
             
-        # Process the command and return response
-        response_content = f"Executed {request.command} with {request.type} (ID: {request.entryId})"
+        # Return test response
+        response_content = "it worked"
         logging.info(f"Sending response: {response_content}")
         return CommandResponse(content=response_content)
         
