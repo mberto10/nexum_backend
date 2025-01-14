@@ -35,18 +35,14 @@ env_vars = load_core_variables()
 app = FastAPI()
 
 # Configure CORS
-origins = [
-    "https://*.replit.dev",
-    "https://*.repl.co"
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Allow all origins in development
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["*"],
     allow_headers=["*"],
-    max_age=3600
+    max_age=3600,
+    expose_headers=["*"]
 )
 
 # Request/Response Models
@@ -104,12 +100,20 @@ async def search(request: SearchRequest) -> SearchResponse:
 
 @app.post("/api/command")
 async def execute_command(request: CommandRequest) -> CommandResponse:
-    logging.info("\n=== New API Command Request ===")
-    logging.info(f"Type: {request.type}")
-    logging.info(f"Command: {request.command}")
-    logging.info(f"EntryId: {request.entryId}")
-    
-    return CommandResponse(content="Hello World! This is a test response from the API.")
+    try:
+        logging.info("\n=== New API Command Request ===")
+        logging.info(f"Type: {request.type}")
+        logging.info(f"Command: {request.command}")
+        logging.info(f"EntryId: {request.entryId}")
+        
+        # Add validation
+        if not request.command or not request.type or not request.entryId:
+            raise HTTPException(status_code=400, detail="Missing required fields")
+            
+        return CommandResponse(content=f"Command received: {request.command}")
+    except Exception as e:
+        logging.error(f"Error processing command: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
