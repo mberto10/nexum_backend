@@ -1,0 +1,40 @@
+Access to fetch at 'https://a68f36bf-ada4-4a0f-ae49-a7fc88d3e949-00-2r06l51igi0p6.worf.replit.dev:3000//api/command' from origin 'https://2c9e21e6-fd5d-45b4-8580-84b7305a5ae4-00-h4gay4hmypih.kirk.replit.dev' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: Redirect is not allowed for a preflight request.Understand this errorAI
+api.ts:14 
+        
+        
+       POST https://a68f36bf-ada4-4a0f-ae49-a7fc88d3e949-00-2r06l51igi0p6.worf.replit.dev:3000//api/command net::ERR_FAILED
+fetchFromAPI @ api.ts:14
+addEntry @ NotebookSection.tsx:141
+handleKeyDown @ NotebookSection.tsx:165
+callCallback @ react-dom.development.js:20565
+invokeGuardedCallbackImpl @ react-dom.development.js:20614
+invokeGuardedCallback @ react-dom.development.js:20689
+invokeGuardedCallbackAndCatchFirstError @ react-dom.development.js:20703
+executeDispatch @ react-dom.development.js:32128
+processDispatchQueueItemsInOrder @ react-dom.development.js:32160
+processDispatchQueue @ react-dom.development.js:32173
+dispatchEventsForPlugins @ react-dom.development.js:32184
+eval @ react-dom.development.js:32374
+batchedUpdates$1 @ react-dom.development.js:24953
+batchedUpdates @ react-dom.development.js:28844
+dispatchEventForPluginEventSystem @ react-dom.development.js:32373
+dispatchEvent @ react-dom.development.js:30141
+dispatchDiscreteEvent @ react-dom.development.js:30112Understand this errorAI
+NotebookSection.tsx:151 Command execution failed: TypeError: Failed to fetch
+    at fetchFromAPI (api.ts:14:26)
+    at addEntry (NotebookSection.tsx:141:44)
+    at handleKeyDown (NotebookSection.tsx:165:7)
+    at HTMLUnknownElement.callCallback (react-dom.development.js:20565:14)
+    at Object.invokeGuardedCallbackImpl (react-dom.development.js:20614:16)
+    at invokeGuardedCallback (react-dom.development.js:20689:29)
+    at invokeGuardedCallbackAndCatchFirstError (react-dom.development.js:20703:25)
+    at executeDispatch (react-dom.development.js:32128:3)
+    at processDispatchQueueItemsInOrder (react-dom.development.js:32160:7)
+    at processDispatchQueue (react-dom.development.js:32173:5)
+    at dispatchEventsForPlugins (react-dom.development.js:32184:3)
+    at eval (react-dom.development.js:32374:12)
+    at batchedUpdates$1 (react-dom.development.js:24953:12)
+    at batchedUpdates (react-dom.development.js:28844:12)
+    at dispatchEventForPluginEventSystem (react-dom.development.js:32373:3)
+    at dispatchEvent (react-dom.development.js:30141:5)
+    at dispatchDiscreteEvent (react-dom.development.js:30112:5)
