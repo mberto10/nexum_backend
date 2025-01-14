@@ -35,18 +35,7 @@ env_vars = load_core_variables()
 app = FastAPI()
 
 # Configure CORS
-origins = [
-    "http://localhost:3000",
-    "https://localhost:3000",
-    "http://0.0.0.0:3000",
-    "https://0.0.0.0:3000",
-    "http://127.0.0.1:3000",
-    "https://127.0.0.1:3000",
-]
-
-# Add the replit domain pattern
-if os.environ.get("REPL_SLUG") and os.environ.get("REPL_OWNER"):
-    origins.append(f"https://{os.environ['REPL_SLUG']}.{os.environ['REPL_OWNER']}.repl.co")
+origins = ["*"]  # Allow all origins in development
 
 app.add_middleware(
     CORSMiddleware,

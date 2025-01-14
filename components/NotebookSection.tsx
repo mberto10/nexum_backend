@@ -1,7 +1,7 @@
 const fetchFromAPI = async (command: string, type: string, entryId: string) => {
   const baseUrl = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : `https://${window.location.hostname}-3000.repl.co`;
+    ? 'http://0.0.0.0:3000'
+    : `https://${window.location.hostname.replace('.repl.co', '')}-3000.repl.co`;
   const response = await fetch(`${baseUrl}/api/command`, {
     method: 'POST',
     headers: {
