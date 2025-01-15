@@ -401,6 +401,101 @@ def pinecone_vector_search(state: AgentState, config: RunnableConfig) -> AgentSt
     query_vector = query_embedding_list[0].values
     logging.info(f"Embedding generated for query: {user_query[:80]}...")
 
+    # Keep track of search queries used
+    queries_used = []
+
+    # Search based on configuration
+    for heading_config in search_config.get("heading_configs", []):
+        try:
+            heading = heading_config.get("heading")
+            use_subheading_filter = heading_config.get("use_subheading_filter", False)
+            relevant_subheadings = heading_config.get("relevant_subheadings", [])
+
+            # Build metadata filter
+            metadata_filter = {
+                "top_level_heading": heading
+            }
+
+            # Add subheading filter if configured
+            if use_subheading_filter and relevant_subheadings:
+                metadata_filter["subheading"] = {"$in": relevant_subheadings}
+                logging.info(f"Searching {heading} with subheading filter: {relevant_subheadings}")
+                queries_used.append(f"Heading: {heading}, Subheading(s): {', '.join(relevant_subheadings)}")
+            else:
+                logging.info(f"Searching {heading} without subheading filter")
+                queries_used.append(f"Heading: {heading}, No subheading filter")
+
+            results = index.query(
+                namespace=namespace,
+                vector=query_vector,
+                top_k=5,
+                include_values=False,
+                include_metadata=True,
+                filter=metadata_filter
+            )
+
+            if not results or "matches" not in results:
+                logging.warning(f"No results for heading: {heading}")
+                continue
+
+            matches = results["matches"] or []
+            if matches:
+                logging.info(f"Found {len(matches)} matches for {heading}")
+
+            for match in matches:
+                meta = match.get("metadata", {})
+                chunk_info = {
+                    "text": meta.get("chunk_text", ""),
+                    "heading": meta.get("top_level_heading", ""),
+                    "subheading": meta.get("subheading", ""),
+                    "score": match.get("score", 0)
+                }
+                if chunk_info["text"]:
+                    all_chunks.append(chunk_info)
+
+        except Exception as e:
+            logging.error(f"Error during Pinecone query for heading {heading}: {e}")
+            continue
+
+    # Log final count
+    logging.info(f"\nFound {len(all_chunks)} relevant chunks")
+
+    # Store the chunks in state
+    state["matched_chunks"] = all_chunks
+    # Also store the queries used in the state
+    state["pinecone_search_queries"] = "\n".join(queries_used)
+    return state
+    pinecone_api_key = os.getenv("PINECONE_API_KEY")
+    if not pinecone_api_key:
+        logging.error("Missing PINECONE_API_KEY environment variable.")
+        return state
+
+    pc = Pinecone(api_key=pinecone_api_key)
+    index = pc.Index(host="https://financialdocs-ij61u7y.svc.aped-4627-b74a.pinecone.io")
+    namespace = state["company_namespace"]
+
+    all_chunks = []
+    user_query = state["user_query"]
+    search_config = state.get("search_configuration", {"heading_configs": []})
+
+    # Create one embedding for the user query
+    try:
+        query_embedding_list = pc.inference.embed(
+            model="multilingual-e5-large",
+            inputs=[user_query],
+            parameters={"input_type": "query", "truncate": "END"}
+        )
+    except Exception as e:
+        logging.error(f"Error embedding query {user_query}: {e}")
+        return state
+
+    if not query_embedding_list or not query_embedding_list.data:
+        logging.warning(f"No query embedding returned from Pinecone inference for: {user_query}")
+        return state
+
+    query_vector = query_embedding_list[0].values
+    logging.info(f"Embedding generated for query: {user_query[:80]}...")
+
     # Search based on configuration
     for heading_config in search_config.get("heading_configs", []):
         try:
@@ -462,6 +557,84 @@ def interpret_results_with_gemini(state: AgentState, config: RunnableConfig) -> 
     """
     Node #4: Now that we have matched chunks, we call Gemini to generate a final answer.
     """
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    if not gemini_api_key:
+        logging.error("Missing GEMINI_API_KEY environment variable.")
+        return state
+
+    genai.configure(api_key=gemini_api_key)
+    model = genai.GenerativeModel("gemini-1.5-flash")
+
+    query_text = state["user_query"]
+    matched_chunks = state["matched_chunks"]
+    context_text = ""
+    for i, chunk in enumerate(matched_chunks, start=1):
+        context_text += (
+            f"\n[CHUNK {i}]:\n"
+            f"Heading: {chunk['heading']}\n"
+            f"Subheading: {chunk['subheading']}\n"
+            f"Content: {chunk['text']}\n"
+            f"Relevance Score: {chunk['score']:.2f}\n"
+        )
+
+    prompt = (
+        "You are a professional financial analyst providing detailed analysis based on 10-K filings. "
+        "For the given user query, I will provide relevant sections from the company's 10-K report. "
+        "\nWhen answering:\n"
+        "1. Structure your response in a professional, analytical tone.\n"
+        "2. Focus on concrete facts, statistics, and specific details from the source material.\n"
+        "3. For each piece of information, add a reference number in square brackets [1] within the text.\n"
+        "4. Present your analysis in a clear, logical flow.\n"
+        "5. After your main analysis, include a 'Sources:' section that lists all references.\n\n"
+        "Format your response like this:\n\n"
+        "ANALYSIS:\n"
+        "[Main analysis text with [1], [2], etc. as references]\n\n"
+        "SOURCES:\n"
+        "[1] [heading], [subheading], [...relevant quote...] \n"
+        "[2] [heading], [subheading], [...relevant quote...]\n"
+        "...\n\n"
+        "User Query: "
+        f"{query_text}\n\n"
+        f"Context:\n{context_text}\n\n"
+        "Remember to maintain a professional tone and ensure every significant piece of information is properly referenced."
+    )
+
+    try:
+        response = model.generate_content(
+            contents=prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.2,
+                max_output_tokens=1700
+            )
+        )
+        final_text = response.text
+        logging.info("\nFINAL ANSWER:")
+        logging.info("=" * 80)
+        logging.info(final_text)
+        logging.info("=" * 80)
+
+        # Parse out the analysis (remove the "ANALYSIS:" label) and the sources
+        import re
+        analysis_text = final_text
+        sources_text = ""
+
+        # Attempt to parse out the segments:
+        pattern = r"ANALYSIS:\s*(.*?)\s*SOURCES:\s*(.*)"
+        match = re.search(pattern, final_text, re.DOTALL | re.IGNORECASE)
+        if match:
+            analysis_text = match.group(1).strip()
+            sources_text = match.group(2).strip()
+
+        # Store them in state
+        state["final_answer"] = analysis_text
+        state["final_sources"] = sources_text
+
+        return state
+    except Exception as e:
+        logging.error(f"Error generating final answer: {e}")
+        state["final_answer"] = "I'm sorry, I encountered an error while generating the answer."
+        state["final_sources"] = ""
+        return state
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:
         logging.error("Missing GEMINI_API_KEY environment variable.")

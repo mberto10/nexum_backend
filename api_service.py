@@ -153,7 +153,19 @@ async def execute_command(request: CommandRequest) -> CommandResponse:
             # Build and run graph
             graph = build_retrieval_graph()
             final_state = graph.invoke(retrieval_state)
-            response_content = final_state.get("final_answer", "No answer generated")
+
+            # Extract final fields
+            analysis = final_state.get("final_answer", "")
+            sources = final_state.get("final_sources", "")
+            search_queries_used = final_state.get("pinecone_search_queries", "")
+
+            import json
+            structured_response = {
+                "analysis": analysis,
+                "sources": sources,
+                "searchQueriesUsed": search_queries_used
+            }
+            response_content = json.dumps(structured_response)
         else:
             response_content = f"Executed {request.command} with {request.type}"
             
